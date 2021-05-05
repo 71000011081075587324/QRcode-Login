@@ -1,0 +1,14 @@
+server:
+  port: 8083
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/login?useSSL=false&characterEncoding=utf8
+    username: root
+    password: hgfzc12345
+
+mybatis:
+#  config-location: classpath:mybatis-config.xml
+  type-aliases-package: com.example.demo.pojo
+  mapper-locations: classpath:/mapper/*Mapper.xml
