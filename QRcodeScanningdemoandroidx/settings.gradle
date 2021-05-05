@@ -1,0 +1,3 @@
+rootProject.name = "QRcodeScanning-demo-androidx"
+//include ':app'
+include ':app', ':zxing-lib'
