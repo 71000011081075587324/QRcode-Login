@@ -13,41 +13,99 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.qrcodescanning_demo_androidx.utils.SharedPreferencesUtils;
+import com.example.qrcodescanning_demo_androidx.vo.ServerResponse;
+import com.example.qrcodescanning_demo_androidx.vo.UserVo;
+import com.google.gson.reflect.TypeToken;
 import com.google.zxing.activity.CaptureActivity;
 import com.google.zxing.util.Constant;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
 //    private static final int RESULT_OK = -1;
     private ImageButton ibOpen;
+    private TextView tvUsername;
+    private Button btnOut;
+
     private static final int CAMERA_OK = 1;
 //    public static final int REQ_PERM_EXTERNAL_STORAGE = 11004;
     private static boolean isPress = false;
     private static boolean isAllPremissions = true;
+    private SharedPreferencesUtils sharedPreferencesUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.module_activity_main);
-        ibOpen = (ImageButton)findViewById(R.id.ib_open);
-        ibOpen.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!isPress){
-                    getPermission();
-//                  startQrCode();
-                }
+        findAllViewById();
+        setAllOnClickListener();
 
-            }
-        });
+        sharedPreferencesUtils = SharedPreferencesUtils.getInstance(MainActivity.this);
+        boolean isLogin = sharedPreferencesUtils.readBoolean("isLogin");
+        ServerResponse<UserVo> serverResponse = sharedPreferencesUtils.readObject("user", new TypeToken<ServerResponse<UserVo>>(){}.getType());
+        if(isLogin){
+            String username = serverResponse.getData().getUsername();
+            tvUsername.setText("当前登录账号：\n" + username);
+//            tvUsername.setText(userVo.getUsername());
+        }
+
+
+//        ibOpen = (ImageButton)findViewById(R.id.ib_open);
+//        ibOpen.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if(!isPress){
+//                    getPermission();
+////                  startQrCode();
+//                }
+//
+//            }
+//        });
 
     }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()){
+            case R.id.ib_open:
+                if(!isPress){
+                    getPermission();
+                }
+            break;
+            //退出登录按钮
+            case R.id.btn_out:
+                //退出登录，清空sharedPreference中的数据
+                sharedPreferencesUtils.clear();
+                Intent intent = new Intent(MainActivity.this,LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            break;
+        }
+
+    }
+
+
+    private void findAllViewById(){
+        ibOpen = (ImageButton)findViewById(R.id.ib_open);
+        tvUsername = (TextView)findViewById(R.id.tv_username);
+        btnOut = (Button)findViewById(R.id.btn_out);
+    }
+
+    private void setAllOnClickListener(){
+        ibOpen.setOnClickListener(this);
+        btnOut.setOnClickListener(this);
+    }
+
 
     @Override
     protected void onStart() {
@@ -55,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
         isPress = false;
     }
 
+    //Capture返回后的回调方法，可以给出适当的弹窗提示
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -82,9 +141,9 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //
 //        }
-        if (requestCode == Constant.REQ_QR_CODE && resultCode == CaptureActivity.RESULT_OK) {
-            Toast.makeText(this,"此二维码无效，请重新扫描",Toast.LENGTH_SHORT).show();
-        }
+//        if (requestCode == Constant.REQ_QR_CODE && resultCode == CaptureActivity.RESULT_OK) {
+//            Toast.makeText(this,"此二维码无效，请重新扫描",Toast.LENGTH_SHORT).show();
+//        }
     }
 
     //获取相机和存储权限
@@ -168,6 +227,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }).show();
     }
+
+
 
 
 //    // 开始扫码

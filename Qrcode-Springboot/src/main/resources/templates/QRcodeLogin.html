@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <!-- 导入jQuery-->
+    <script th:src="@{/js/jquery-3.6.0.js}"></script>
+</head>
+<style>
+    #all{
+        width: 800px;
+        height: 450px;
+        position:absolute;
+        top:50%;
+        left:50%;
+        margin:-225px 0 0 -400px;
+    }
+</style>
+
+
+
+<body>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var isLogin = "扫码登录失败";
+    var checks = self.setInterval("check()",1000);
+
+    function check() {
+
+        // alert("check" + isLogin);
+        console.log(isLogin);
+
+        $.ajax({
+            url:"http://3a955v7566.wicp.vip/QRcodeLogin/check",
+            data:{randchar:[[${QRcodeImg}]]},
+            success:function (data) {
+
+                console.log("data:  " + data);
+                console.log("data[0]:   " + data[0]);
+                console.log("data[1]    " + data[1]);
+                console.log("data.msg" + data.msg);
+                console.log("data.status" + data.status);
+
+                if (data.status == 0){
+                    isLogin =  data.status;
+                }else{
+                    isLogin =  data.status;
+                }
+
+
+                if(isLogin == 0){
+                    document.getElementById("h_text").innerHTML = "当前登录账号:  " + data.data;
+                    document.getElementById("img_qrcode").style.display='none';
+                    clearInterval(checks);
+
+                }
+
+            }
+        })
+    }
+    /*]]>*/
+</script>
+
+
+<div id="all">
+    <h1 id="h_text" align="center" >扫一扫 APP 扫码登陆</h1>
+    <div align="center">
+        <img id="img_qrcode" th:src="@{/img/{imgName}.png(imgName=${QRcodeImg})}" alt="" width="200" height="200">
+        <!--    <img th:src="@{${QRcodeImg}}" alt="" width="200" height="200">-->
+    </div>
+</div>

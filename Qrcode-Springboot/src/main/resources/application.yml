@@ -7,6 +7,14 @@ spring:
     url: jdbc:mysql://localhost:3306/login?useSSL=false&characterEncoding=utf8
     username: root
     password: hgfzc12345
+  thymeleaf:
+    mode: HTML5
+    cache: false
+    encoding: UTF-8
+  resources:
+    static-locations: file:F:\课设-手机二维码的简单扫描实现\Qrcode-Springboot\src\main\resources\static
+  mvc:
+    static-path-pattern: /**
 
 mybatis:
 #  config-location: classpath:mybatis-config.xml

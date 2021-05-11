@@ -7,7 +7,8 @@ public enum ResponseCode {
     USERNAME_EXIST(4,"用户名存在"),
     PASSWORD_ERROR(5,"密码错误"),
     PARAMTER_NOT_EMPTY(6,"参数不能为空"),
-    REGISTER_FALL(7,"注册失败")
+    REGISTER_FAIL(7,"注册失败"),
+    QRCODELOGIN_FAIL(8,"扫码登录失败")
     ;
 
     private int code;

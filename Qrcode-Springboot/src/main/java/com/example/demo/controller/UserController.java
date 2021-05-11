@@ -23,9 +23,7 @@ public class UserController {
 
     @RequestMapping("/register")
     public ServerResponse register(User user){
-
         return userService.registerLogic(user);
-
     }
 
 }

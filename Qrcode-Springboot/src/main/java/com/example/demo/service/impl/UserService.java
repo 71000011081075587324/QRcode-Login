@@ -8,8 +8,6 @@ import com.example.demo.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.imageio.spi.ServiceRegistry;
-
 @Service
 public class UserService implements IUserService {
 
@@ -41,7 +39,8 @@ public class UserService implements IUserService {
 
 
         //4.登录成功，返回结果
-        return ServerResponse.createServerResponseBySuccess(user.getUsername());
+        user.setPassword("");
+        return ServerResponse.createServerResponseBySuccess(user);
     }
 
     @Override
@@ -72,7 +71,7 @@ public class UserService implements IUserService {
         //3.注册(注意前端要加密)
         int result = userMapper.register(user);
         if(result == 0){
-            return ServerResponse.createServerResponseByFail(ResponseCode.REGISTER_FALL.getCode(),ResponseCode.REGISTER_FALL.getMsg());
+            return ServerResponse.createServerResponseByFail(ResponseCode.REGISTER_FAIL.getCode(),ResponseCode.REGISTER_FAIL.getMsg());
         }
 
         return  ServerResponse.createServerResponseBySuccess();

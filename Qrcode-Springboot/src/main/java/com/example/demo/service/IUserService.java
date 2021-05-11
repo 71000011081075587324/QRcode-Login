@@ -16,7 +16,7 @@ public interface IUserService {
     /**
      *
      * @param user 注册传入的用户
-     * @return
+     * @return 返回
      */
     public ServerResponse registerLogic(User user);
 }

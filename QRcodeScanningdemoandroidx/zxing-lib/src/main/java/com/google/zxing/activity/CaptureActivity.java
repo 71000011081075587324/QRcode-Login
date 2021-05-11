@@ -1,6 +1,7 @@
 package com.google.zxing.activity;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
@@ -11,6 +12,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.SurfaceHolder;
@@ -21,6 +24,9 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.ChecksumException;
@@ -37,13 +43,23 @@ import com.google.zxing.decoding.RGBLuminanceSource;
 import com.google.zxing.qrcode.QRCodeReader;
 import com.google.zxing.util.BitmapUtil;
 import com.google.zxing.util.Constant;
+import com.google.zxing.utils.OkHttpCallback;
+import com.google.zxing.utils.OkHttpUtils;
+import com.google.zxing.utils.SharedPreferencesUtils;
 import com.google.zxing.view.ViewfinderView;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+
+
+import com.google.zxing.vo.QrLoginVo;
+import com.google.zxing.vo.ServerResponse;
+import com.google.zxing.vo.UserVo;
 
 
 /**
@@ -119,8 +135,51 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    //发送登录请求
+    private void qrLogin(int userid,String username,String randchar){
+        //请求接口前缀
+        String urlPrefix = "http://3a955v7566.wicp.vip/user";
+
+
+        //请求接口
+        OkHttpUtils.get(urlPrefix + "/qrLogin?userid=" + userid + "&username=" + username + "&randchar=" + randchar, new OkHttpCallback(){
+            @Override
+            public void onFinish(String status, String msg) {
+                super.onFinish(status, msg);
+
+                //使用Gson解析数据
+                Gson gson = new Gson();
+                Type userType = new TypeToken<ServerResponse<QrLoginVo>>(){}.getType();
+                ServerResponse<QrLoginVo> serverResponse = gson.fromJson(msg, userType);
+
+                int statusl = serverResponse.getStatus();
+
+                if(statusl != 0){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            AlertDialog.Builder dialog = new AlertDialog.Builder(CaptureActivity.this);
+                            dialog.setTitle("扫码登录失败");
+                            dialog.setMessage("扫码登录失败，请重新尝试");
+                            dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                }
+                            });
+                            dialog.setNegativeButton(null,null);
+                            dialog.show();
+                        }
+                    });
+                }
+
+            }
+        } );
+
+    }
+
+
     /**
-     * 处理选择的图片
+     * 处理从图库中选择的图片
      * @param data
      */
     private void handleAlbumPic(Intent data) {
@@ -147,17 +206,35 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
 //                    resultIntent.putExtras(bundle);
 //                    CaptureActivity.this.setResult(RESULT_OK, resultIntent);
 
+                    String resultString = result.getText();
+
+                    //判断是否是网页登录二维码
+                    String mobile = "QRcodeImg";
+                    if(resultString.endsWith(mobile)){
+                        SharedPreferencesUtils sharedPreferencesUtils = SharedPreferencesUtils.getInstance(CaptureActivity.this);
+                        boolean isLogin = sharedPreferencesUtils.readBoolean("isLogin");
+                        ServerResponse<UserVo> serverResponse = sharedPreferencesUtils.readObject("user", new TypeToken<ServerResponse<UserVo>>(){}.getType());
+                        if(isLogin){
+                            int userid = serverResponse.getData().getUesrid();
+                            String username = serverResponse.getData().getUsername();
+                            qrLogin(userid,username,resultString);
+                        }
+//
+//                        CaptureActivity.this.finish();
+                    }
+
                     //判断扫描二维码是否是网址，并将扫描出的信息显示出来
-                    String regex = "(((https|http)?://)?([a-z0-9]+[.])|(www.))"
+                String regex = "(((https|http)?://)?([a-z0-9]+[.])|(www.))"
                             + "\\w+[.|\\/]([a-z0-9]{0,})?[[.]([a-z0-9]{0,})]+((/[\\S&&[^,;\u4E00-\u9FA5]]+)+)?([.][a-z0-9]{0,}+|/?)";//设置正则表达式
 
                     Pattern pat = Pattern.compile(regex.trim());//比对
-                    Matcher mat = pat.matcher(result.getText().trim());
+                    Matcher mat = pat.matcher(resultString.trim());
                     if(mat.matches()){
                         Intent intent = new Intent(Intent.ACTION_VIEW);
                         intent.setData(Uri.parse(result.getText()));
                         startActivity(intent);
                     }else{
+                        //给Capture传内容，不过暂未处理，后续可优化
                         Intent resultIntent = new Intent();
                         Bundle bundle = getIntent().getExtras();
                         if (bundle == null) {
@@ -168,7 +245,7 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
                         resultIntent.putExtras(bundle);
                         CaptureActivity.this.setResult(RESULT_OK, resultIntent);
                         finish();
-//                        Toast.makeText(this,"此二维码无效，请重新扫描",Toast.LENGTH_SHORT).show();
+
                     }
 
 //                    finish();
@@ -178,6 +255,8 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
             }
         });
     }
+
+
 
     /**
      * 扫描二维码图片的方法
@@ -256,7 +335,7 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
     public void handleDecode(Result result, Bitmap barcode) {
         inactivityTimer.onActivity();
         playBeepSoundAndVibrate();
-        String resultString = result.getText();
+        String resultString = result.getText(); //二维码代表的图片
         if (TextUtils.isEmpty(resultString)) {
             Toast.makeText(CaptureActivity.this, R.string.note_scan_failed, Toast.LENGTH_SHORT).show();
         } else {
@@ -269,6 +348,29 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
 //            resultIntent.putExtras(bundle);
 //            this.setResult(RESULT_OK, resultIntent);
 //
+
+            //判断是否是网页登录二维码
+            String mobile = "QRcodeImg";
+            if(resultString.endsWith(mobile)){
+                SharedPreferencesUtils sharedPreferencesUtils = SharedPreferencesUtils.getInstance(CaptureActivity.this);
+                boolean isLogin = sharedPreferencesUtils.readBoolean("isLogin");
+                ServerResponse<UserVo> serverResponse = sharedPreferencesUtils.readObject("user", new TypeToken<ServerResponse<UserVo>>(){}.getType());
+                if(isLogin){
+                    int userid = serverResponse.getData().getUesrid();
+                    String username = serverResponse.getData().getUsername();
+                    qrLogin(userid,username,resultString);
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Toast.makeText(this,"登录成功").show();
+//                        }
+//                    });
+                }
+//                CaptureActivity.this.finish();
+
+            }
+
+
             //判断扫描二维码是否是网址，并将扫描出的信息显示出来
             String regex = "(((https|http)?://)?([a-z0-9]+[.])|(www.))"
                     + "\\w+[.|\\/]([a-z0-9]{0,})?[[.]([a-z0-9]{0,})]+((/[\\S&&[^,;\u4E00-\u9FA5]]+)+)?([.][a-z0-9]{0,}+|/?)";//设置正则表达式
@@ -281,6 +383,7 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
                 startActivity(intent);
 
             }else{
+
                 CaptureActivity.this.finish();
             }
 //            CaptureActivity.this.finish();
