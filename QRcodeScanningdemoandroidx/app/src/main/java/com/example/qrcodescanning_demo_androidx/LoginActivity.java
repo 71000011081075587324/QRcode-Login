@@ -1,5 +1,6 @@
 package com.example.qrcodescanning_demo_androidx;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -35,6 +36,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static android.widget.Toast.LENGTH_SHORT;
+
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private Button loginBtn;
     private EditText usernameEt;
@@ -47,7 +50,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.module_activity_login);
-
+        getSupportActionBar().hide();
         findAllViewById();
         setAllOnClickListener();
 
@@ -81,7 +84,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
 
     private void setAllOnClickListener(){
+
         loginBtn.setOnClickListener(this);
+        registerTv.setOnClickListener(this);
     }
 
     //发送登录请求，并处理逻辑
@@ -167,7 +172,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
 
     private void register(){
-        Toast.makeText(LoginActivity.this,"该功能暂未实现",Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(LoginActivity.this,RegisterActivity.class);
+        startActivityForResult(intent,RegisterActivity.REGISTER_SUCCESS);
     }
 
 
@@ -233,6 +239,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }).show();
     }
 
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode){
+            case RegisterActivity.REGISTER_SUCCESS:
+                if(data !=null){
+                    Toast.makeText(LoginActivity.this,"注册成功", LENGTH_SHORT).show();
+                    Bundle bundle = data.getExtras();
+                    if(bundle != null){
+                        usernameEt.setText(bundle.getString("username"));
+                    }
+                }
+                break;
+        }
+    }
 
 
 }

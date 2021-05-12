@@ -9,15 +9,12 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.qrcodescanning_demo_androidx.utils.SharedPreferencesUtils;
 import com.example.qrcodescanning_demo_androidx.vo.ServerResponse;
@@ -26,8 +23,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.zxing.activity.CaptureActivity;
 import com.google.zxing.util.Constant;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 

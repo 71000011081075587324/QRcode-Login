@@ -8,4 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="lightGray">#f7f7f7</color>
+    <color name="titleGray">#f0f0f0</color>
+    <color name="btnBule">#008ce6</color>
 </resources>
