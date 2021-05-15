@@ -88,6 +88,7 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
     private ProgressDialog mProgress;
     private Bitmap scanBitmap;
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,13 +137,15 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
     }
 
     //发送登录请求
-    private void qrLogin(int userid,String username,String randchar){
+    private void qrLogin(int userid,String username,String randchar,String token){
         //请求接口前缀
         String urlPrefix = "http://3a955v7566.wicp.vip/user";
+//        Intent intent = getIntent();
+//        String token = intent.getStringExtra("token");
 
 
         //请求接口
-        OkHttpUtils.get(urlPrefix + "/qrLogin?userid=" + userid + "&username=" + username + "&randchar=" + randchar, new OkHttpCallback(){
+        OkHttpUtils.getWithToken(urlPrefix + "/qrLogin?userid=" + userid + "&username=" + username + "&randchar=" + randchar, token , new OkHttpCallback(){
             @Override
             public void onFinish(String status, String msg) {
                 super.onFinish(status, msg);
@@ -213,11 +216,13 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
                     if(resultString.endsWith(mobile)){
                         SharedPreferencesUtils sharedPreferencesUtils = SharedPreferencesUtils.getInstance(CaptureActivity.this);
                         boolean isLogin = sharedPreferencesUtils.readBoolean("isLogin");
-                        ServerResponse<UserVo> serverResponse = sharedPreferencesUtils.readObject("user", new TypeToken<ServerResponse<UserVo>>(){}.getType());
+//                        ServerResponse<UserVo> serverResponse = sharedPreferencesUtils.readObject("user", new TypeToken<ServerResponse<UserVo>>(){}.getType());
                         if(isLogin){
-                            int userid = serverResponse.getData().getUesrid();
-                            String username = serverResponse.getData().getUsername();
-                            qrLogin(userid,username,resultString);
+//                            int userid = serverResponse.getData().getUesrid();
+//                            String username = serverResponse.getData().getUsername();
+                            String username = sharedPreferencesUtils.readString("user");
+                            String token = sharedPreferencesUtils.readString("token");
+                            qrLogin(0,username,token,resultString);
                         }
 //
 //                        CaptureActivity.this.finish();
@@ -354,11 +359,16 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
             if(resultString.endsWith(mobile)){
                 SharedPreferencesUtils sharedPreferencesUtils = SharedPreferencesUtils.getInstance(CaptureActivity.this);
                 boolean isLogin = sharedPreferencesUtils.readBoolean("isLogin");
-                ServerResponse<UserVo> serverResponse = sharedPreferencesUtils.readObject("user", new TypeToken<ServerResponse<UserVo>>(){}.getType());
+//                ServerResponse<UserVo> serverResponse = sharedPreferencesUtils.readObject("user", new TypeToken<ServerResponse<UserVo>>(){}.getType());
                 if(isLogin){
-                    int userid = serverResponse.getData().getUesrid();
-                    String username = serverResponse.getData().getUsername();
-                    qrLogin(userid,username,resultString);
+//                    int userid = serverResponse.getData().getUesrid();
+//                    String username = serverResponse.getData().getUsername();
+//                    qrLogin(userid,username,resultString);
+
+                    String username = sharedPreferencesUtils.readString("user");
+                    String token = sharedPreferencesUtils.readString("token");
+                    qrLogin(0,username,resultString,token);
+
 //                    runOnUiThread(new Runnable() {
 //                        @Override
 //                        public void run() {

@@ -26,10 +26,10 @@ public class QRcodeLoginWeb {
         return qrcodeService.hasRandchar(randchar);
     }
 
-    @GetMapping("/QRcodeLogin/success")
-    public String loginSuccess(String username,Model model){
-            model.addAttribute("username",username);
-            return "LoginSuccess";
-    }
+//    @GetMapping("/QRcodeLogin/success")
+//    public String loginSuccess(String username,Model model){
+//            model.addAttribute("username",username);
+//            return "LoginSuccess";
+//    }
 
 }

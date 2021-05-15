@@ -24,6 +24,12 @@
             #{record.password}
         )
     </insert>
+    
+    <update id="alterPassword">
+        update login_test3
+        set password = #{newpassword}
+        where username=#{username} and password=#{primarypassword}
+    </update>
 
 </mapper>
 

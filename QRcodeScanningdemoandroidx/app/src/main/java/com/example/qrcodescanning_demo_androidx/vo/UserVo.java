@@ -6,6 +6,14 @@ public class UserVo {
     private String username;
     private String password;
 
+    public UserVo() {
+    }
+
+    public UserVo(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
     public int getUesrid() {
         return uesrid;
     }

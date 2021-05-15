@@ -11,13 +11,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 
 import com.example.qrcodescanning_demo_androidx.utils.OkHttpCallback;
 import com.example.qrcodescanning_demo_androidx.utils.OkHttpUtils;
@@ -29,11 +33,16 @@ import com.google.gson.reflect.TypeToken;
 import com.google.zxing.activity.CaptureActivity;
 import com.google.zxing.util.Constant;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import static android.widget.Toast.LENGTH_SHORT;
@@ -44,6 +53,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private EditText passwordEt;
     private TextView registerTv;
     private int whichClick;
+    private SharedPreferencesUtils sharedPreferencesUtils;
+
+    private AlertDialog.Builder dialog;
+
+    private final String TAG = LoginActivity.class.getSimpleName();
+
 
 
     @Override
@@ -51,6 +66,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.module_activity_login);
         getSupportActionBar().hide();
+        sharedPreferencesUtils = SharedPreferencesUtils.getInstance(LoginActivity.this);
+        if(sharedPreferencesUtils.readBoolean("isLogin") == true){
+            tokenLogin();
+            if(sharedPreferencesUtils.readBoolean("tokenVerity") == true){
+                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }
         findAllViewById();
         setAllOnClickListener();
 
@@ -89,6 +113,37 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         registerTv.setOnClickListener(this);
     }
 
+    private void tokenLogin(){
+        String urlPrefix = "http://3a955v7566.wicp.vip/user";
+        String token =  sharedPreferencesUtils.readString("token");
+        Log.d(TAG,"token = " + token);
+        if(token != null){
+            RequestBody body = new FormBody.Builder().add("token", token).build();
+
+            OkHttpUtils.post(urlPrefix + "/tokenlogin",
+                    body,
+                    new OkHttpCallback(){
+                        @Override
+                        public void onFinish(String status, String msg) {
+                            super.onFinish(status, msg);
+
+                            Gson gson = new Gson();
+//                Type userType = new TypeToken<ServerResponse<UserVo>>(){}.getType();
+//                ServerResponse<UserVo> serverResponse = gson.fromJson(msg, userType);
+                            Type userType = new TypeToken<ServerResponse<String>>(){}.getType();
+                            ServerResponse<String> serverResponse = gson.fromJson(msg, userType);
+
+                            if(serverResponse.getStatus() == 0){
+                                sharedPreferencesUtils.putBoolean("tokenVerity",true);
+                            }else{
+                                sharedPreferencesUtils.putBoolean("tokenVerity",false);
+                            }
+                        }
+                    });
+        }
+
+    }
+
     //发送登录请求，并处理逻辑
     private void login(){
         //请求接口前缀
@@ -99,9 +154,24 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //获取输入框密码
         String password = passwordEt.getText().toString();
 
+//        Log.d(TAG,"password = " + password);
+//        boolean test1 = (password == "");
+//        boolean test2 = (password == null);
+//        Log.d(TAG,"test1 = " + test1);
+//        Log.d(TAG,"test2 = " + test2);
+
+//        JSONObject jsonObject = new JSONObject();
+//        try {
+//            jsonObject.put("username",username);
+//            jsonObject.put("password",password.hashCode());
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+
+        RequestBody body = new FormBody.Builder().add("username",username).add("password", password.equals("") ? "" : String.valueOf(password.hashCode())).build();
 
         //请求接口（使用okhttp）
-        OkHttpUtils.get(urlPrefix + "/login?username=" + username +"&password=" + password,new OkHttpCallback(){
+        OkHttpUtils.post(urlPrefix + "/login",body,new OkHttpCallback(){
             @Override
             public void onFinish(String status, String msg) {
                 super.onFinish(status, msg);
@@ -116,8 +186,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                 //使用Gson解析数据
                 Gson gson = new Gson();
-                Type userType = new TypeToken<ServerResponse<UserVo>>(){}.getType();
-                ServerResponse<UserVo> serverResponse = gson.fromJson(msg, userType);
+//                Type userType = new TypeToken<ServerResponse<UserVo>>(){}.getType();
+//                ServerResponse<UserVo> serverResponse = gson.fromJson(msg, userType);
+                Type userType = new TypeToken<ServerResponse<String>>(){}.getType();
+                ServerResponse<String> serverResponse = gson.fromJson(msg, userType);
 
                 int statusl = serverResponse.getStatus();
 
@@ -138,11 +210,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 ////                                startActivity(intent);
 //                            }
 //                        });
-
-                    SharedPreferencesUtils sharedPreferencesUtils = SharedPreferencesUtils.getInstance(LoginActivity.this);
+//                    JwtUtil jwtUtil = JwtUtil.getInstance();
+                    Log.d(TAG,"获得的msg:" + msg);
+                    Log.d(TAG,"获得的msg-data:" + serverResponse.getData());
+//                    SharedPreferencesUtils sharedPreferencesUtils = SharedPreferencesUtils.getInstance(LoginActivity.this);
                     sharedPreferencesUtils.putBoolean("isLogin",true);
-                    sharedPreferencesUtils.putString("user", msg);
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    sharedPreferencesUtils.putString("user", username);
+                    sharedPreferencesUtils.putString("token",serverResponse.getData());
+//                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
 
@@ -152,12 +228,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            AlertDialog.Builder dialog = new AlertDialog.Builder(LoginActivity.this);
+
+                            dialog = new AlertDialog.Builder(LoginActivity.this);
                             dialog.setTitle("登录失败");
                             dialog.setMessage(serverResponse.getMsg()+"，请重新输入。");
                             dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
                                 }
                             });
                             dialog.setNegativeButton(null,null);
@@ -174,6 +252,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void register(){
         Intent intent = new Intent(LoginActivity.this,RegisterActivity.class);
         startActivityForResult(intent,RegisterActivity.REGISTER_SUCCESS);
+
     }
 
 
@@ -235,6 +314,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     public void onClick(DialogInterface dialog, int which) {
                         // 一般情况下如果用户不授权的话，功能是无法运行的，做退出处理
 //                        finish();
+                        dialog.dismiss();
                     }
                 }).show();
     }
@@ -250,11 +330,19 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     Bundle bundle = data.getExtras();
                     if(bundle != null){
                         usernameEt.setText(bundle.getString("username"));
+                        passwordEt.setText("");
                     }
                 }
                 break;
         }
     }
 
+    @Override
+    protected void onPause() {
+        if(dialog != null){
+            dialog = null;
+        }
+        super.onPause();
+    }
 
 }

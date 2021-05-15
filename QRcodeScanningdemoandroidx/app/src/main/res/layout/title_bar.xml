@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:gravity="center_vertical"
+    android:layout_marginTop="3dp">
+
+    <ImageView
+        android:id="@+id/iv_back"
+        android:layout_width="76dp"
+        android:layout_height="32dp"
+        android:paddingRight="30dp"
+        android:src="@drawable/ic_topbanner_back" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="@string/string_tv_setPassword"
+        android:textSize="20sp"
+        android:textColor="@color/black"/>
+
+    <Button
+        android:id="@+id/btn_finish"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="8dp"
+        android:text="@string/string_btn_finish"
+        android:textSize="17dp"
+        android:background="@drawable/module_round_corners_bg"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="5dp"
+        />
+
+</LinearLayout>

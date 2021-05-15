@@ -4,6 +4,10 @@
     <string name="string_tv_username" translatable="false">暂未登录</string>
     <string name="string_btn_register" translatable="false">注册</string>
     <string name="string_tv_qrcode" translatable="false">扫一扫</string>
-    <string name="string_bt_out" translatable="false">退出登录</string>
+    <string name="string_btn_loginout" translatable="false">退出登录</string>
     <string name="string_ib_open" translatable="false">打开扫描界面</string>
+    <string name="string_btn_setp">设置</string>
+    <string name="string_btn_changePassword">修改密码</string>
+    <string name="string_tv_setPassword">设置密码</string>
+    <string name="string_btn_finish">完成</string>
 </resources>

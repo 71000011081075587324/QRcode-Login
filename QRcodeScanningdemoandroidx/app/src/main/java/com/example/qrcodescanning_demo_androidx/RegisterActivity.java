@@ -8,42 +8,47 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextPaint;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.qrcodescanning_demo_androidx.utils.OkHttpCallback;
 import com.example.qrcodescanning_demo_androidx.utils.OkHttpUtils;
-import com.example.qrcodescanning_demo_androidx.utils.SharedPreferencesUtils;
 import com.example.qrcodescanning_demo_androidx.vo.ServerResponse;
-import com.example.qrcodescanning_demo_androidx.vo.UserVo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 
-import static android.widget.Toast.*;
-import static android.widget.Toast.LENGTH_LONG;
+import okhttp3.FormBody;
+import okhttp3.RequestBody;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView titleTv;
     private Button registerBtn;
     private EditText usernameEt;
     private EditText passwordEt;
+    private ImageView ivBack;
     public static final int REGISTER_SUCCESS = 1;
+
+    private AlertDialog.Builder dialog;
+
+    private final String TAG = RegisterActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LayoutInflater factory = LayoutInflater.from(this);
-        View titleEntryView =  factory.inflate(R.layout.title,null);
+
+//        LayoutInflater factory = LayoutInflater.from(this);
+//        View titleEntryView =  factory.inflate(R.layout.title,null);
+
         setContentView(R.layout.module_activity_register);
         findAllViewById();
         setAllOnClickListener();
@@ -58,17 +63,23 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         registerBtn = (Button)findViewById(R.id.btn_register);
         usernameEt = (EditText)findViewById(R.id.et_reg_username);
         passwordEt = (EditText)findViewById(R.id.et_reg_password);
+        ivBack = (ImageView)findViewById(R.id.iv_back);
     }
 
     private void setAllOnClickListener(){
         registerBtn.setOnClickListener(this);
+        ivBack.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.btn_register:
+            case R.id.btn_register:     //注册按钮
                 getPermission();
+                break;
+            case R.id.iv_back:      //标题栏返回按钮
+                finish();
+                break;
         }
     }
 
@@ -81,17 +92,33 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         //获取输入框密码
         String password = passwordEt.getText().toString();
 
+//        JSONObject jsonObject = new JSONObject();
+//        try {
+//            jsonObject.put("username",username);
+//            jsonObject.put("password",password.hashCode());
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//
+//        Log.d(TAG,"jsonObject = " + jsonObject);
+//        Log.d(TAG,"jsonObject.toString() = " + jsonObject.toString());
+
+        RequestBody body = new FormBody.Builder().add("username",username).add("password", password.equals("") ? "" : String.valueOf(password.hashCode())).build();
 
         //请求接口（使用okhttp）
-        OkHttpUtils.get(urlPrefix + "/register?username=" + username +"&password=" + password,new OkHttpCallback(){
+        OkHttpUtils.post(urlPrefix + "/register", body ,new OkHttpCallback(){
             @Override
             public void onFinish(String status, String msg) {
                 super.onFinish(status, msg);
 
                 Gson gson = new Gson();
-                Type userType = new TypeToken<ServerResponse<UserVo>>() {
+                Type userType = new TypeToken<ServerResponse<String>>() {
                 }.getType();
-                ServerResponse<UserVo> serverResponse = gson.fromJson(msg, userType);
+                ServerResponse<String> serverResponse = gson.fromJson(msg, userType);
+
+                Log.d(TAG,"serverResponse = " + serverResponse);
+                Log.d(TAG,"statusl = " + serverResponse.getStatus());
+                Log.d(TAG,"msg = " + serverResponse.getMsg());
 
                 int statusl = serverResponse.getStatus();
 
@@ -110,16 +137,32 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            AlertDialog.Builder dialog = new AlertDialog.Builder(RegisterActivity.this);
-                            dialog.setTitle("登录失败");
+                            dialog = new AlertDialog.Builder(RegisterActivity.this);
+                            dialog.setTitle("注册失败");
                             dialog.setMessage(serverResponse.getMsg() + "，请重新输入。");
                             dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
+
+                                    dialog.dismiss();
+
                                 }
                             });
                             dialog.setNegativeButton(null, null);
                             dialog.show();
+
+
+//                            dialog = new AlertDialog.Builder(RegisterActivity.this)
+//                                    .setTitle("警告！")
+//                                    .setMessage("请前往设置->应用->PermissionDemo->权限中打开相关权限，否则功能可能无法正常运行！")
+//                                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+//                                        @Override
+//                                        public void onClick(DialogInterface dialog, int which) {
+//                                            // 一般情况下如果用户不授权的话，功能是无法运行的，做退出处理
+////                        finish();
+//                                        }
+//                                    }).show();
+//
                         }
                     });
                 }
@@ -188,8 +231,18 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     public void onClick(DialogInterface dialog, int which) {
                         // 一般情况下如果用户不授权的话，功能是无法运行的，做退出处理
 //                        finish();
+                        dialog.dismiss();
                     }
                 }).show();
+    }
+
+
+    @Override
+    protected void onPause() {
+        if(dialog != null){
+            dialog = null;
+        }
+        super.onPause();
     }
 
 }

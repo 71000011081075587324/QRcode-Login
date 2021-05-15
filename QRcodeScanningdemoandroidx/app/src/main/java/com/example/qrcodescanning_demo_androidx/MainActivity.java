@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             break;
             //退出登录按钮
-            case R.id.btn_out:
+            case R.id.btn_loginout:
                 //退出登录，清空sharedPreference中的数据
                 sharedPreferencesUtils.clear();
                 Intent intent = new Intent(MainActivity.this,LoginActivity.class);
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void findAllViewById(){
         ibOpen = (ImageButton)findViewById(R.id.ib_open);
         tvUsername = (TextView)findViewById(R.id.tv_username);
-        btnOut = (Button)findViewById(R.id.btn_out);
+        btnOut = (Button)findViewById(R.id.btn_loginout);
     }
 
     private void setAllOnClickListener(){

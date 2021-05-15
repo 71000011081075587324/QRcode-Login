@@ -8,7 +8,9 @@ public enum ResponseCode {
     PASSWORD_ERROR(5,"密码错误"),
     PARAMTER_NOT_EMPTY(6,"参数不能为空"),
     REGISTER_FAIL(7,"注册失败"),
-    QRCODELOGIN_FAIL(8,"扫码登录失败")
+    QRCODELOGIN_FAIL(8,"扫码登录失败"),
+    TOKEN_VERIFY_FAIL(9,"token验证失败"),
+    ERROR(10,"发生错误")
     ;
 
     private int code;

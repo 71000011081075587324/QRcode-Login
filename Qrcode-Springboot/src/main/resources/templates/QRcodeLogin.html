@@ -34,13 +34,14 @@
         $.ajax({
             url:"http://3a955v7566.wicp.vip/QRcodeLogin/check",
             data:{randchar:[[${QRcodeImg}]]},
+            // data:{randchar:"e5a34fdf-7043-4c8a-9df6-088578431c9bQRcodeImg"},
             success:function (data) {
 
                 console.log("data:  " + data);
-                console.log("data[0]:   " + data[0]);
-                console.log("data[1]    " + data[1]);
-                console.log("data.msg" + data.msg);
-                console.log("data.status" + data.status);
+                // console.log("data[0]:   " + data[0]);
+                // console.log("data[1]    " + data[1]);
+                // console.log("data.msg" + data.msg);
+                // console.log("data.status" + data.status);
 
                 if (data.status == 0){
                     isLogin =  data.status;

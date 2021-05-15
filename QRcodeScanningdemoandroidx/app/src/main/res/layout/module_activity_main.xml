@@ -49,13 +49,13 @@
             android:textSize="24sp" />
 
         <Button
-            android:id="@+id/btn_out"
+            android:id="@+id/btn_loginout"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
             android:layout_marginTop="30dp"
-            android:text="@string/string_bt_out"/>
+            android:text="@string/string_btn_loginout"/>
 
     </LinearLayout>
 </LinearLayout>
